@@ -2,7 +2,6 @@
 Chapitre 11.1
 """
 
-
 import math
 from inspect import *
 
