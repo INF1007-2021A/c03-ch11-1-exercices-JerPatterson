@@ -53,7 +53,7 @@ class Character:
 		self.attack = attack
 		self.defense = defense
 		self.level = level
-		self.weapon = None
+		self.__weapon = None
 		self.hp = max_hp
 	
 	@property

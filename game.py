@@ -7,11 +7,8 @@ Classes pour représenter un personnage.
 import random
 import utils
 
-UNARMED_POWER = 20
-
 
 class Weapon:
-	UNARMED_POWER = UNARMED_POWER
 	"""
 	Une arme dans le jeu.
 
@@ -19,6 +16,8 @@ class Weapon:
 	:param power: Le niveau d'attaque
 	:param min_level: Le niveau minimal pour l'utiliser
 	"""
+	UNARMED_POWER = 20
+
 	def __init__(self, name, power, min_level = 1):
 		self.__name = name
 		self.power = power
@@ -28,9 +27,9 @@ class Weapon:
 	def name(self):
 		return self.__name
 
-		
-	def make_unarmed():
-		return Weapon("Unarmed", UNARMED_POWER)
+	@classmethod	
+	def make_unarmed(cls):
+		return cls("Unarmed", cls.UNARMED_POWER)
 	
 
 
@@ -51,32 +50,45 @@ class Character:
 		self.defense = defense
 		self.level = level
 		self.hp = max_hp
+		self.__weapon = weapon
 
-		if weapon == None:
+		if self.__weapon == None:
 			self.weapon = Weapon.make_unarmed()
 
 	@property
 	def name(self):
 		return self.__name
 
-	def compute_damage(attacker, defender):
+	@property
+	def weapon(self):
+		return self.__weapon
+
+	@weapon.setter # Pour que le test fonctionne
+	def weapon(self, value):
+		self.__weapon = value
+		if self.__weapon == None:
+			self.__weapon = Weapon.make_unarmed()
+
+	def compute_damage(self, defender: 'Character'):
 		crit = random.choices([1, 2], [100 - 6.25, 6.25])
-		modifier = crit[0] * random.randint(85, 100) / 100
+		crit = (crit, crit == 1)
+		modifier = crit[0][0] * random.randint(85, 100) / 100
 		
-		damages = ((2 * attacker.level / 5 + 2) * attacker.weapon.power * attacker.attack / defender.defense / 50 + 2) * modifier
+		damages = ((2 * self.level / 5 + 2) * self.weapon.power * self.attack / defender.defense / 50 + 2) * modifier
 		defender.hp = max(0, defender.hp - damages)
 
-		return int(damages)
+		return int(damages), crit[1]
 
 
-def deal_damage(attacker, defender):
+def deal_damage(attacker: 'Character', defender: 'Character'):
 	# Calculer dégâts
+	damages, critical = attacker.compute_damage(defender)
 	print(f"{attacker.name} used {attacker.weapon.name}")
-	if defender.hp > 0:
+	if critical:
 		print("  Critical hit!")
-	print(f"  {defender.name} took {Character.compute_damage(attacker, defender)} dmg")
+	print(f"  {defender.name} took {damages} dmg")
 
-def run_battle(c1, c2):
+def run_battle(c1: 'Character', c2: 'Character'):
 	turns = 0
 	attacker, defender = c1, c2
 	print(f"{attacker.name} starts a battle with {defender.name}!")
